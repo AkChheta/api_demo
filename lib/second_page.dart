@@ -46,6 +46,20 @@
 //       child: Text(data == null ? 'Data is null' : 'NEXT PAGE')),
 // ),
 
+// var dataa = {
+//   "data": "1",
+//   "data1": "2",
+//   "data2": "3",
+//   "data3": "4",
+// };
+// @override
+// void initState() {
+//   print("Dta::::::::::::${dataa.keys}");
+//   print("Dta::::::::::::${dataa.values}");
+//   super.initState();
+// }
+
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 
 import 'package:table_calendar/table_calendar.dart';
@@ -61,8 +75,8 @@ class _CountryListScreenState extends State<CountryListScreen> {
   Map<DateTime, List<Event>> events = {
     DateTime(2023, 9, 15): [Event(DateTime(2023, 9, 15), 'Event 1')],
     DateTime(2023, 9, 20): [Event(DateTime(2023, 9, 20), 'Event 2')],
-    // Add more events here
   };
+
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
 
@@ -76,12 +90,13 @@ class _CountryListScreenState extends State<CountryListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Country List'),
+          title: const Text('Calendar Table'),
+          centerTitle: true,
         ),
         body: TableCalendar(
           // eventLoader: fetchEvents,
-          headerStyle: const HeaderStyle(
-              titleCentered: true, formatButtonVisible: false),
+          // headerStyle: const HeaderStyle(
+          //     titleCentered: true, formatButtonVisible: false),
           firstDay: DateTime.utc(2010, 10, 16),
           lastDay: DateTime.utc(2030, 3, 14),
           focusedDay: DateTime.now(),
@@ -107,4 +122,53 @@ class Event {
   final String description;
 
   Event(this.date, this.description);
+}
+
+class CalendarViewPage extends StatefulWidget {
+  const CalendarViewPage({super.key});
+
+  @override
+  State<CalendarViewPage> createState() => _CalendarViewPageState();
+}
+
+class _CalendarViewPageState extends State<CalendarViewPage> {
+  final event = CalendarEventData(
+    title: 'anshil',
+    date: DateTime(2023, 9, 10),
+    endDate: DateTime(2023, 9, 15),
+    event: "Event 1",
+  );
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  data() {
+    CalendarControllerProvider.of(context).controller.add(event);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: MonthView(
+        controller: EventController(),
+        minMonth: DateTime(1990),
+        maxMonth: DateTime(2050),
+        initialMonth: DateTime(2023),
+        cellAspectRatio: 1,
+        onPageChange: (date, pageIndex) => print("$date, $pageIndex"),
+        onCellTap: (events, date) {
+          // Implement callback when user taps on a cell.
+          print(events);
+        },
+        startDay: WeekDays.sunday,
+        onEventTap: (event, date) => print(event),
+        onDateLongPress: (date) => print(date),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        data();
+      }),
+    );
+  }
 }

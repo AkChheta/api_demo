@@ -8,13 +8,15 @@ import 'package:http/http.dart' as http;
 class PaginationApiScreen extends StatelessWidget {
   final PaginationController controller = Get.put(PaginationController());
 
+  PaginationApiScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Obx(() {
         if (controller.posts.isEmpty) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else {
           return ListView.builder(
             padding: const EdgeInsets.all(20),
@@ -25,12 +27,19 @@ class PaginationApiScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index < controller.posts.length) {
                 final post = controller.posts[index];
-                final title = post['title']['rendered'];
-                return ListTile(
-                  title: Text(title),
+
+                return Card(
+                  margin: const EdgeInsets.all(20),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(post.avatar.toString()),
+                    ),
+                    title: Text(post.email.toString()),
+                    subtitle: Text("${post.firstName} ${post.lastName}"),
+                  ),
                 );
               } else {
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
@@ -44,7 +53,7 @@ class PaginationApiScreen extends StatelessWidget {
 
 class PaginationController extends GetxController {
   final scrollController = ScrollController();
-  var posts = [].obs;
+  List<Data> posts = <Data>[].obs;
   var page = 1.obs;
   var isLoadingMore = false.obs;
 
@@ -56,15 +65,17 @@ class PaginationController extends GetxController {
   }
 
   fetchdata() async {
-    final url =
-        'https://techcrunch.com/wp-json/wp/v2/posts?context=embed&per_page=10&page=${page.value}';
+    final url = 'https://reqres.in/api/users?page=${page.value}';
 
     final uri = Uri.parse(url);
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as List;
-      posts.addAll(json);
+      final json = jsonDecode(response.body);
+
+      final List a = json['data'];
+      List<Data> data = a.map((e) => Data.fromJson(e)).toList();
+      posts.addAll(data);
     }
   }
 
@@ -77,5 +88,33 @@ class PaginationController extends GetxController {
       await fetchdata();
       isLoadingMore.value = false;
     }
+  }
+}
+
+class Data {
+  int? id;
+  String? email;
+  String? firstName;
+  String? lastName;
+  String? avatar;
+
+  Data({this.id, this.email, this.firstName, this.lastName, this.avatar});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    email = json['email'];
+    firstName = json['first_name'];
+    lastName = json['last_name'];
+    avatar = json['avatar'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['email'] = this.email;
+    data['first_name'] = this.firstName;
+    data['last_name'] = this.lastName;
+    data['avatar'] = this.avatar;
+    return data;
   }
 }
